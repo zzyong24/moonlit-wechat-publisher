@@ -1,0 +1,5 @@
+interface:
+  display_name: "月明·公众号草稿发布"
+  short_description: "将公众号 Markdown 按月明品牌风格排版并安全写入草稿箱"
+  brand_color: "#39EC88"
+  default_prompt: "使用 $moonlit-wechat-publisher 将这篇公众号 Markdown 按月明品牌风格排版，并在本次授权后写入微信公众号草稿箱。"
