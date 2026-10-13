@@ -17,6 +17,7 @@ H2_RE = re.compile(r"^##\s+(.+?)\s*$")
 H3_RE = re.compile(r"^###\s+(.+?)\s*$")
 ORDERED_RE = re.compile(r"^\d+[.)]\s+(.+)$")
 CALLOUT_RE = re.compile(r"^\[!(KEY|NOTE|VERDICT|QUESTION|COMPARE)]\s*(.+)$", re.I)
+TABLE_RULE_RE = re.compile(r"^:?-{3,}:?$")
 
 
 def inline(text: str, tone: str = "normal") -> str:
@@ -63,6 +64,79 @@ def paragraph(text: str, lead: bool = False) -> str:
         '<p style="margin: 0 0 21px; color: #343a36; font-size: 17px; line-height: 1.95; '
         f'letter-spacing: 0.012em; text-align: justify;">{inline(text)}</p>'
     )
+
+
+def split_table_row(line: str) -> list[str]:
+    """Split a Markdown pipe-table row, preserving pipes inside code spans."""
+    value = line.strip()
+    if value.startswith("|"):
+        value = value[1:]
+    if value.endswith("|"):
+        value = value[:-1]
+
+    cells: list[str] = []
+    current: list[str] = []
+    in_code = False
+    index = 0
+    while index < len(value):
+        char = value[index]
+        if char == "\\" and index + 1 < len(value) and value[index + 1] == "|":
+            current.append("|")
+            index += 2
+            continue
+        if char == "`":
+            in_code = not in_code
+        if char == "|" and not in_code:
+            cells.append("".join(current).strip())
+            current.clear()
+        else:
+            current.append(char)
+        index += 1
+    cells.append("".join(current).strip())
+    return cells
+
+
+def is_table_delimiter(line: str) -> bool:
+    cells = split_table_row(line)
+    return len(cells) > 1 and all(TABLE_RULE_RE.fullmatch(cell) for cell in cells)
+
+
+def table_block(header: list[str], delimiter: list[str], rows: list[list[str]]) -> str:
+    if len(header) != len(delimiter):
+        raise ValueError("Markdown table header and delimiter have different column counts")
+    for row in rows:
+        if len(row) != len(header):
+            raise ValueError(
+                f"Markdown table row has {len(row)} columns; expected {len(header)}"
+            )
+
+    alignments = []
+    for rule in delimiter:
+        alignments.append("center" if rule.startswith(":") and rule.endswith(":") else "right" if rule.endswith(":") else "left")
+
+    table = (
+        '<table border="0" cellpadding="0" cellspacing="0" width="100%" '
+        'style="width: 100%; margin: 22px 0 30px; border-collapse: collapse; table-layout: fixed; '
+        'font-size: 14px; line-height: 1.65; color: #343a36; word-break: break-all;"><tbody><tr>'
+    )
+    for cell, alignment in zip(header, alignments):
+        table += (
+            f'<td style="padding: 9px 7px; border: 1px solid #d8ddd9; background-color: #f1f7f3; '
+            f'color: #121815; font-size: 13px; line-height: 1.55; font-weight: 700; '
+            f'text-align: {alignment}; vertical-align: top;">{inline(cell)}</td>'
+        )
+    table += "</tr>"
+    for row_index, row in enumerate(rows):
+        background = "#ffffff" if row_index % 2 == 0 else "#f8faf8"
+        table += "<tr>"
+        for cell, alignment in zip(row, alignments):
+            table += (
+                f'<td style="padding: 9px 7px; border: 1px solid #d8ddd9; background-color: {background}; '
+                f'color: #343a36; font-size: 13px; line-height: 1.65; text-align: {alignment}; '
+                f'vertical-align: top;">{inline(cell)}</td>'
+            )
+        table += "</tr>"
+    return table + "</tbody></table>"
 
 
 def heading_two(text: str, index: int) -> str:
@@ -173,6 +247,7 @@ def render_markdown(
     ordered = False
     heading_count = 0
     image_count = 0
+    table_count = 0
     highlight_count = 0
     callout_counts = {kind: 0 for kind in ("KEY", "NOTE", "VERDICT", "QUESTION", "COMPARE")}
     section_highlights: dict[int, int] = {0: 0}
@@ -211,7 +286,9 @@ def render_markdown(
         list_items.clear()
         ordered = False
 
-    for line in lines:
+    line_index = 0
+    while line_index < len(lines):
+        line = lines[line_index]
         stripped = line.strip()
         if stripped.startswith("```"):
             flush_paragraph()
@@ -226,18 +303,22 @@ def render_markdown(
                 in_code = False
             else:
                 in_code = True
+            line_index += 1
             continue
         if in_code:
             code_lines.append(line)
+            line_index += 1
             continue
         if not stripped:
             flush_paragraph()
             flush_list()
+            line_index += 1
             continue
         match = H1_RE.match(line)
         if match:
             flush_paragraph()
             flush_list()
+            line_index += 1
             continue
         match = H2_RE.match(line)
         if match:
@@ -247,6 +328,7 @@ def render_markdown(
             section_highlights.setdefault(heading_count, 0)
             register_highlights(match.group(1))
             blocks.append(heading_two(match.group(1), heading_count))
+            line_index += 1
             continue
         match = H3_RE.match(line)
         if match:
@@ -257,6 +339,24 @@ def render_markdown(
                 '<h3 style="margin: 30px 0 14px; padding: 0 0 7px; border-bottom: 2px solid #b7ef3f; '
                 f'color: #121815; font-size: 18px; line-height: 1.5; font-weight: 700;">{inline(match.group(1))}</h3>'
             )
+            line_index += 1
+            continue
+        if line_index + 1 < len(lines) and "|" in line and is_table_delimiter(lines[line_index + 1]):
+            flush_paragraph()
+            flush_list()
+            header = split_table_row(line)
+            delimiter = split_table_row(lines[line_index + 1])
+            if len(header) != len(delimiter):
+                raise ValueError("Markdown table header and delimiter have different column counts")
+            rows: list[list[str]] = []
+            line_index += 2
+            while line_index < len(lines) and "|" in lines[line_index] and lines[line_index].strip():
+                rows.append(split_table_row(lines[line_index]))
+                line_index += 1
+            for cell in [*header, *(cell for row in rows for cell in row)]:
+                register_highlights(cell)
+            blocks.append(table_block(header, delimiter, rows))
+            table_count += 1
             continue
         match = IMAGE_RE.match(stripped)
         if match:
@@ -264,11 +364,13 @@ def render_markdown(
             flush_list()
             image_count += 1
             blocks.append(image_block(match.group(1), match.group(2), image_count))
+            line_index += 1
             continue
         if stripped in {"---", "***", "___"}:
             flush_paragraph()
             flush_list()
             blocks.append('<hr style="margin: 30px 0; border: 0; border-top: 1px solid #d8ddd9;" />')
+            line_index += 1
             continue
         if stripped.startswith(">"):
             flush_paragraph()
@@ -285,6 +387,7 @@ def render_markdown(
                     '<blockquote style="margin: 22px 0 26px; padding: 15px 17px; border-left: 4px solid #12a868; '
                     f'background-color: #f3f5f3;"><p style="margin: 0; color: #2d332f; font-size: 16px; line-height: 1.8;">{inline(quote)}</p></blockquote>'
                 )
+            line_index += 1
             continue
         if stripped.startswith(("- ", "* ")):
             flush_paragraph()
@@ -293,6 +396,7 @@ def render_markdown(
             item = stripped[2:].strip()
             register_highlights(item)
             list_items.append(item)
+            line_index += 1
             continue
         ordered_match = ORDERED_RE.match(stripped)
         if ordered_match:
@@ -303,10 +407,12 @@ def render_markdown(
             item = ordered_match.group(1).strip()
             register_highlights(item)
             list_items.append(item)
+            line_index += 1
             continue
         flush_list()
         register_highlights(stripped)
         paragraph_lines.append(stripped)
+        line_index += 1
 
     flush_paragraph()
     flush_list()
@@ -371,6 +477,7 @@ def render_markdown(
         "title": title,
         "headings": heading_count,
         "images": image_count,
+        "tables": table_count,
         "bytes": len(output.encode()),
         "hero_style": hero_style,
         "emphasis": {

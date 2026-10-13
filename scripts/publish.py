@@ -177,6 +177,9 @@ def build_parser() -> argparse.ArgumentParser:
     mode.add_argument("--publish", action="store_true", help="Upload images and create a new WeChat draft")
     parser.add_argument("--cover", required=True, type=Path)
     parser.add_argument("--out-dir", required=True, type=Path)
+    parser.add_argument("--guoshen-receipt", type=Path, default=os.getenv("MOONLIT_GUOSHEN_RECEIPT"))
+    parser.add_argument("--guoshen-gate", type=Path, default=os.getenv("MOONLIT_GUOSHEN_GATE"))
+    parser.add_argument("--guoshen-dir", type=Path, default=os.getenv("MOONLIT_GUOSHEN_DIR"))
     parser.add_argument("--title")
     parser.add_argument("--author", default="月明水清深")
     parser.add_argument("--digest")
@@ -230,7 +233,11 @@ def main() -> int:
             title = args.title
             content = source_path.read_text(encoding="utf-8")
             digest = args.digest or ""
-            render_meta = {"headings": len(re.findall(r"<h2\b", content, re.I)), "images": len(IMAGE_SRC_RE.findall(content))}
+            render_meta = {
+                "headings": len(re.findall(r"<h2\b", content, re.I)),
+                "images": len(IMAGE_SRC_RE.findall(content)),
+                "tables": len(re.findall(r"<table\b", content, re.I)),
+            }
             asset_base = source_path.parent
             visual_check = {
                 "success": True,
@@ -257,10 +264,15 @@ def main() -> int:
         browser_preview_file = args.out_dir / "article.browser.html"
         browser_content = localize_browser_images(browser_source_content, asset_base, args.out_dir)
         browser_preview_file.write_text(browser_document(browser_content, title), encoding="utf-8")
+        fields_file = args.out_dir / "publication-fields.json"
+        fields_file.write_text(json.dumps({"title": title, "author": args.author,
+            "digest": digest, "imageSources": [m[1] for m in IMAGE_SRC_RE.findall(content)]},
+            ensure_ascii=False, sort_keys=True), encoding="utf-8")
         if args.dry_run:
             result = {
                 "success": True,
-                "status": "ready",
+                "status": "preview_ready",
+                "risk_review": "not_checked",
                 "remote_effects": False,
                 "title": title,
                 "digest_length": len(digest),
@@ -272,6 +284,21 @@ def main() -> int:
             }
             print(json.dumps(result, ensure_ascii=False, indent=2))
             return 0
+
+        if not all((args.guoshen_gate, args.guoshen_dir, args.guoshen_receipt)):
+            raise PublishError("必须实际运行 guoshen 并提供 gate、dir、receipt；禁止跳过发布前审核")
+        review_files = {source_path.resolve(), cover, preview_file.resolve(), fields_file.resolve()}
+        for match in IMAGE_SRC_RE.findall(content):
+            kind, local_path = resolve_image(html_module.unescape(match[1]), asset_base)
+            if kind == "local" and local_path:
+                review_files.add(local_path)
+        command = [sys.executable, str(args.guoshen_gate), "--guoshen-dir", str(args.guoshen_dir),
+                   "--receipt", str(args.guoshen_receipt), "--platform", "wechat_article", "--stage", "content"]
+        for file in sorted(review_files):
+            command.extend(["--file", str(file)])
+        review = subprocess.run(command, text=True, capture_output=True)
+        if review.returncode != 0:
+            raise PublishError(review.stderr.strip() or review.stdout.strip() or "guoshen preflight failed")
 
         if not shutil.which("md2wechat"):
             raise PublishError("md2wechat is not installed. Run scripts/bootstrap.sh after user approval.")

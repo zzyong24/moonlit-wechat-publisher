@@ -121,6 +121,46 @@ class RenderWechatTest(unittest.TestCase):
         self.assertNotIn("FIG.", rendered)
         self.assertIn("这是必要说明", rendered)
 
+    def test_pipe_tables_render_as_responsive_inline_style_tables(self) -> None:
+        markdown = """# 表格测试
+
+## 两种工作方式
+
+| 任务 | 工具 | 结果 |
+|---|:---:|---:|
+| 单独尝试功能 | Branch | 同一目录切换分支 |
+| 并行任务 | Worktree | 多一份工作目录 |
+
+## 许可证
+
+| 许可证 | 商业用途 | 条件 |
+|---|---|---|
+| MIT | 允许 | 保留版权和许可证文本 |
+| GPL-3.0 | 允许 | 再分发时提供源码 |
+"""
+        rendered, metadata = render_markdown(markdown, "MOONLIT", None, None)
+
+        self.assertEqual(metadata["tables"], 2)
+        self.assertEqual(rendered.count("<table"), 2)
+        self.assertEqual(rendered.count("</table>"), 2)
+        self.assertIn("table-layout: fixed", rendered)
+        self.assertNotIn("<thead", rendered)
+        self.assertNotIn("<th ", rendered)
+        self.assertIn("Branch", rendered)
+        self.assertIn("GPL-3.0", rendered)
+        self.assertNotIn("|---|", rendered)
+        self.assertNotIn("| 单独尝试功能", rendered)
+
+    def test_table_rows_with_wrong_column_count_fail_instead_of_flattening(self) -> None:
+        markdown = """# 表格测试
+
+| A | B |
+|---|---|
+| one |
+"""
+        with self.assertRaisesRegex(ValueError, "expected 2"):
+            render_markdown(markdown, "MOONLIT", None, None)
+
 
 if __name__ == "__main__":
     unittest.main()
