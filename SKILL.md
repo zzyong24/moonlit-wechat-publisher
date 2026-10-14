@@ -3,7 +3,7 @@ name: moonlit-wechat-publisher
 description: Use when a user wants to format a Markdown or HTML article in the 月明水清深 WeChat style, turn short video evidence into an article GIF, upload article images, create or verify a WeChat Official Account draft, or needs first-use md2wechat installation, AppID/AppSecret, and IP-whitelist guidance.
 metadata:
   display_name: 月明·公众号草稿发布
-  version: "1.5.2"
+  version: "1.6.0"
   updated: "2026-10-12"
 ---
 
@@ -92,10 +92,10 @@ metadata:
 
 ## 品牌样式不变量
 
-- 白底正文；深炭黑 `#121815` 建立章节锚点；亮绿 `#b7ef3f` 只用于结构、结论和少量识别线。
+- 白底正文；深墨蓝 `#182b42` 建立章节锚点；铜橙 `#9b4f2c`/亮铜 `#e0894f` 只用于结构、结论和少量识别线（色值以 moonlit-content-engine `references/brand-tokens.md` 纸面主题为准）。
 - 默认使用轻量顶部品牌线，不在正文重复微信原生标题；章节使用 `SECTION 01` 编号；正文图片默认不显示编号或技术化图注，只有图片 alt 以 `图注：` 开头时才显示自然图注。
-- 不使用整页护眼绿、渐变、阴影、外链 CSS、`<style>` 或 `<script>`。
-- 视觉样式必须对应内容语义：`**普通强调**` 保持深色，`==关键结果==` 使用品牌绿虚线强调；不要用颜色代替论证。
+- 不使用整页底色、渐变、阴影、外链 CSS、`<style>` 或 `<script>`。
+- 视觉样式必须对应内容语义：`**普通强调**` 保持深色，`==关键结果==` 使用品牌铜橙虚线强调；不要用颜色代替论证。
 - 每篇最多使用 3 个重点模块，且最多一个 `[!VERDICT]`。Markdown 可用 `> [!KEY]`、`> [!NOTE]`、`> [!VERDICT]`、`> [!QUESTION]`、`> [!COMPARE] 左 || 右`。
 - `[!KEY]` 是不带卡片的核心金句；`[!NOTE]` 是浅色解释框；深色 `[!VERDICT]` 只用于全文最终结论。每个章节最多 2 处 `==关键结果==`。
 - 品牌图最低数量沿用上游已确认方向，通过 check_visuals.py 的 --min-brand-ai 和 publish.py 的 --min-brand-images 传入同一值；已确认非宇航员或纯证据图方向可以为 0。只有实际选用宇航员品牌图时才按对应身份标志核验；其他已确认解释图按真实类型登记，不计入该数量。线稿不用发光灯带。

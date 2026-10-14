@@ -22,17 +22,17 @@ TABLE_RULE_RE = re.compile(r"^:?-{3,}:?$")
 
 def inline(text: str, tone: str = "normal") -> str:
     value = html.escape(text.strip(), quote=True)
-    strong_color = "#b7ef3f" if tone == "dark" else "#121815"
-    highlight_color = "#b7ef3f" if tone == "dark" else "#0f8e59"
-    highlight_border = "#6d9f61" if tone == "dark" else "#86caaa"
+    strong_color = "#e0894f" if tone == "dark" else "#182b42"
+    highlight_color = "#e0894f" if tone == "dark" else "#8a4426"
+    highlight_border = "#c27a4f" if tone == "dark" else "#d9a07a"
     value = re.sub(
         r"\[([^]]+)]\((https?://[^)]+)\)",
-        r'<a href="\2" style="color: #0f8e59; text-decoration: none; border-bottom: 1px solid #86caaa;">\1</a>',
+        r'<a href="\2" style="color: #8a4426; text-decoration: none; border-bottom: 1px solid #d9a07a;">\1</a>',
         value,
     )
     value = re.sub(
         r"`([^`]+)`",
-        r'<code style="padding: 2px 5px; background-color: #f0f2f0; color: #121815; font-family: Menlo, Consolas, monospace; font-size: 0.9em;">\1</code>',
+        r'<code style="padding: 2px 5px; background-color: #f1ede6; color: #182b42; font-family: Menlo, Consolas, monospace; font-size: 0.9em;">\1</code>',
         value,
     )
     value = re.sub(
@@ -52,16 +52,16 @@ def inline(text: str, tone: str = "normal") -> str:
 def paragraph(text: str, lead: bool = False) -> str:
     if text.strip().startswith(("——", "— ")):
         return (
-            '<p style="margin: 22px 0 0; color: #69716d; font-size: 13px; line-height: 1.6; '
+            '<p style="margin: 22px 0 0; color: #536176; font-size: 13px; line-height: 1.6; '
             f'letter-spacing: 0.08em; text-align: right;">{inline(text)}</p>'
         )
     if lead:
         return (
-            '<p style="margin: 30px 0 22px; color: #121815; font-size: 19px; line-height: 1.78; '
+            '<p style="margin: 30px 0 22px; color: #182b42; font-size: 19px; line-height: 1.78; '
             f'font-weight: 700; letter-spacing: 0.01em;">{inline(text)}</p>'
         )
     return (
-        '<p style="margin: 0 0 21px; color: #343a36; font-size: 17px; line-height: 1.95; '
+        '<p style="margin: 0 0 21px; color: #394b60; font-size: 17px; line-height: 1.95; '
         f'letter-spacing: 0.012em; text-align: justify;">{inline(text)}</p>'
     )
 
@@ -117,22 +117,22 @@ def table_block(header: list[str], delimiter: list[str], rows: list[list[str]]) 
     table = (
         '<table border="0" cellpadding="0" cellspacing="0" width="100%" '
         'style="width: 100%; margin: 22px 0 30px; border-collapse: collapse; table-layout: fixed; '
-        'font-size: 14px; line-height: 1.65; color: #343a36; word-break: break-all;"><tbody><tr>'
+        'font-size: 14px; line-height: 1.65; color: #394b60; word-break: break-all;"><tbody><tr>'
     )
     for cell, alignment in zip(header, alignments):
         table += (
-            f'<td style="padding: 9px 7px; border: 1px solid #d8ddd9; background-color: #f1f7f3; '
-            f'color: #121815; font-size: 13px; line-height: 1.55; font-weight: 700; '
+            f'<td style="padding: 9px 7px; border: 1px solid #e4ded3; background-color: #f6f2ea; '
+            f'color: #182b42; font-size: 13px; line-height: 1.55; font-weight: 700; '
             f'text-align: {alignment}; vertical-align: top;">{inline(cell)}</td>'
         )
     table += "</tr>"
     for row_index, row in enumerate(rows):
-        background = "#ffffff" if row_index % 2 == 0 else "#f8faf8"
+        background = "#ffffff" if row_index % 2 == 0 else "#faf8f4"
         table += "<tr>"
         for cell, alignment in zip(row, alignments):
             table += (
-                f'<td style="padding: 9px 7px; border: 1px solid #d8ddd9; background-color: {background}; '
-                f'color: #343a36; font-size: 13px; line-height: 1.65; text-align: {alignment}; '
+                f'<td style="padding: 9px 7px; border: 1px solid #e4ded3; background-color: {background}; '
+                f'color: #394b60; font-size: 13px; line-height: 1.65; text-align: {alignment}; '
                 f'vertical-align: top;">{inline(cell)}</td>'
             )
         table += "</tr>"
@@ -141,11 +141,11 @@ def table_block(header: list[str], delimiter: list[str], rows: list[list[str]]) 
 
 def heading_two(text: str, index: int) -> str:
     return (
-        '<section style="margin: 54px 0 25px; padding: 0 0 12px; border-bottom: 1px solid #d8ddd9;">'
-        '<p style="margin: 0 0 9px; color: #12a868; font-family: Georgia, \'Times New Roman\', serif; '
+        '<section style="margin: 54px 0 25px; padding: 0 0 12px; border-bottom: 1px solid #e4ded3;">'
+        '<p style="margin: 0 0 9px; color: #9b4f2c; font-family: Georgia, \'Times New Roman\', serif; '
         f'font-size: 13px; line-height: 1; font-weight: 700; letter-spacing: 0.16em;">SECTION {index:02d}</p>'
-        '<h2 style="margin: 0; padding: 0 0 0 13px; border-left: 4px solid #b7ef3f; '
-        'color: #121815; font-size: 23px; line-height: 1.5; '
+        '<h2 style="margin: 0; padding: 0 0 0 13px; border-left: 4px solid #e0894f; '
+        'color: #182b42; font-size: 23px; line-height: 1.5; '
         f'font-weight: 700; letter-spacing: 0.01em;">{inline(text)}</h2></section>'
     )
 
@@ -158,13 +158,13 @@ def image_block(alt: str, source: str, index: int) -> str:
     if alt.strip().startswith("图注："):
         caption = alt.strip()[3:].strip()
     block = (
-        '<section style="margin: 34px 0 40px; padding: 0; border-bottom: 2px solid #b7ef3f; line-height: 0;">'
+        '<section style="margin: 34px 0 40px; padding: 0; border-bottom: 2px solid #e0894f; line-height: 0;">'
         f'<img src="{html.escape(source, quote=True)}" alt="{html.escape(alt, quote=True)}" '
         'style="display: block; width: 100%; height: auto; margin: 0; border: 0;" />'
     )
     if caption:
         block += (
-            '<p style="margin: 0; padding: 10px 2px 9px; color: #69716d; background-color: #ffffff; '
+            '<p style="margin: 0; padding: 10px 2px 9px; color: #536176; background-color: #ffffff; '
             f'font-size: 12px; line-height: 1.5; letter-spacing: 0.04em; text-align: left;">{html.escape(caption)}</p>'
         )
     return block + "</section>"
@@ -175,14 +175,14 @@ def callout(kind: str, text: str) -> str:
     if kind == "KEY":
         return (
             '<section style="margin: 29px 0 32px; padding: 0;">'
-            f'<p style="margin: 0; color: #0f8e59; font-size: 20px; line-height: 1.72; font-weight: 700; letter-spacing: 0.01em;">{inline(text)}</p>'
+            f'<p style="margin: 0; color: #8a4426; font-size: 20px; line-height: 1.72; font-weight: 700; letter-spacing: 0.01em;">{inline(text)}</p>'
             "</section>"
         )
     if kind == "NOTE":
         return (
             '<blockquote style="margin: 26px 0 31px; padding: 19px 19px 18px; border: 0; '
-            'border-left: 5px solid #12a868; background-color: #f1f7f3;">'
-            f'<p style="margin: 0; color: #343a36; font-size: 16px; line-height: 1.9;">{inline(text)}</p>'
+            'border-left: 5px solid #9b4f2c; background-color: #f6f2ea;">'
+            f'<p style="margin: 0; color: #394b60; font-size: 16px; line-height: 1.9;">{inline(text)}</p>'
             "</blockquote>"
         )
     if kind == "COMPARE":
@@ -192,23 +192,23 @@ def callout(kind: str, text: str) -> str:
         return (
             '<table style="width: 100%; margin: 26px 0 30px; border-collapse: collapse; table-layout: fixed;">'
             '<tbody><tr>'
-            '<td style="width: 50%; padding: 18px 14px; border: 1px solid #d8ddd9; background-color: #f3f5f3; '
-            f'color: #121815; font-size: 18px; line-height: 1.5; font-weight: 700; text-align: center;">{inline(left)}</td>'
-            '<td style="width: 50%; padding: 18px 14px; border: 1px solid #121815; background-color: #121815; '
-            f'color: #b7ef3f; font-size: 18px; line-height: 1.5; font-weight: 700; text-align: center;">{inline(right)}</td>'
+            '<td style="width: 50%; padding: 18px 14px; border: 1px solid #e4ded3; background-color: #f4f1ec; '
+            f'color: #182b42; font-size: 18px; line-height: 1.5; font-weight: 700; text-align: center;">{inline(left)}</td>'
+            '<td style="width: 50%; padding: 18px 14px; border: 1px solid #182b42; background-color: #182b42; '
+            f'color: #e0894f; font-size: 18px; line-height: 1.5; font-weight: 700; text-align: center;">{inline(right)}</td>'
             "</tr></tbody></table>"
         )
     if kind == "QUESTION":
         return (
-            '<section style="margin: 38px 0 18px; padding: 20px 18px; border: 2px solid #121815; background-color: #ffffff;">'
-            '<p style="margin: 0 0 7px; color: #12a868; font-family: Georgia, serif; font-size: 12px; '
+            '<section style="margin: 38px 0 18px; padding: 20px 18px; border: 2px solid #182b42; background-color: #ffffff;">'
+            '<p style="margin: 0 0 7px; color: #9b4f2c; font-family: Georgia, serif; font-size: 12px; '
             'line-height: 1.4; font-weight: 700; letter-spacing: 0.14em;">ONE QUESTION</p>'
-            f'<p style="margin: 0; color: #121815; font-size: 18px; line-height: 1.7; font-weight: 700;">{inline(text)}</p>'
+            f'<p style="margin: 0; color: #182b42; font-size: 18px; line-height: 1.7; font-weight: 700;">{inline(text)}</p>'
             "</section>"
         )
     return (
         '<blockquote style="margin: 26px 0 30px; padding: 22px 20px; border: 0; '
-        'border-left: 7px solid #b7ef3f; background-color: #121815;">'
+        'border-left: 7px solid #e0894f; background-color: #182b42;">'
         f'<p style="margin: 0; color: #ffffff; font-size: 20px; line-height: 1.68; font-weight: 700;">{inline(text, "dark")}</p>'
         "</blockquote>"
     )
@@ -277,11 +277,11 @@ def render_markdown(
             return
         tag = "ol" if ordered else "ul"
         items = "".join(
-            f'<li style="margin: 0 0 9px; padding-left: 2px; color: #2d332f; font-size: 16px; line-height: 1.8;">{inline(item)}</li>'
+            f'<li style="margin: 0 0 9px; padding-left: 2px; color: #2b3644; font-size: 16px; line-height: 1.8;">{inline(item)}</li>'
             for item in list_items
         )
         blocks.append(
-            f'<{tag} style="margin: 8px 0 24px; padding-left: 24px; color: #2d332f;">{items}</{tag}>'
+            f'<{tag} style="margin: 8px 0 24px; padding-left: 24px; color: #2b3644;">{items}</{tag}>'
         )
         list_items.clear()
         ordered = False
@@ -296,8 +296,8 @@ def render_markdown(
             if in_code:
                 code = html.escape("\n".join(code_lines))
                 blocks.append(
-                    '<pre style="margin: 18px 0 24px; padding: 16px; overflow-x: auto; background-color: #121815; '
-                    f'color: #eaf1ed; font-size: 13px; line-height: 1.65;"><code>{code}</code></pre>'
+                    '<pre style="margin: 18px 0 24px; padding: 16px; overflow-x: auto; background-color: #182b42; '
+                    f'color: #f3f0e8; font-size: 13px; line-height: 1.65;"><code>{code}</code></pre>'
                 )
                 code_lines.clear()
                 in_code = False
@@ -336,8 +336,8 @@ def render_markdown(
             flush_list()
             register_highlights(match.group(1))
             blocks.append(
-                '<h3 style="margin: 30px 0 14px; padding: 0 0 7px; border-bottom: 2px solid #b7ef3f; '
-                f'color: #121815; font-size: 18px; line-height: 1.5; font-weight: 700;">{inline(match.group(1))}</h3>'
+                '<h3 style="margin: 30px 0 14px; padding: 0 0 7px; border-bottom: 2px solid #e0894f; '
+                f'color: #182b42; font-size: 18px; line-height: 1.5; font-weight: 700;">{inline(match.group(1))}</h3>'
             )
             line_index += 1
             continue
@@ -369,7 +369,7 @@ def render_markdown(
         if stripped in {"---", "***", "___"}:
             flush_paragraph()
             flush_list()
-            blocks.append('<hr style="margin: 30px 0; border: 0; border-top: 1px solid #d8ddd9;" />')
+            blocks.append('<hr style="margin: 30px 0; border: 0; border-top: 1px solid #e4ded3;" />')
             line_index += 1
             continue
         if stripped.startswith(">"):
@@ -384,8 +384,8 @@ def render_markdown(
                 blocks.append(callout(marker.group(1), marker.group(2)))
             else:
                 blocks.append(
-                    '<blockquote style="margin: 22px 0 26px; padding: 15px 17px; border-left: 4px solid #12a868; '
-                    f'background-color: #f3f5f3;"><p style="margin: 0; color: #2d332f; font-size: 16px; line-height: 1.8;">{inline(quote)}</p></blockquote>'
+                    '<blockquote style="margin: 22px 0 26px; padding: 15px 17px; border-left: 4px solid #9b4f2c; '
+                    f'background-color: #f4f1ec;"><p style="margin: 0; color: #2b3644; font-size: 16px; line-height: 1.8;">{inline(quote)}</p></blockquote>'
                 )
             line_index += 1
             continue
@@ -431,8 +431,8 @@ def render_markdown(
 
     if hero_style == "dark":
         hero_parts = [
-            '<section style="margin: 0 0 28px; padding: 25px 21px 23px; border-top: 7px solid #b7ef3f; background-color: #121815;">',
-            '<p style="margin: 0 0 17px; color: #b7ef3f; font-family: Georgia, \'Times New Roman\', serif; '
+            '<section style="margin: 0 0 28px; padding: 25px 21px 23px; border-top: 7px solid #e0894f; background-color: #182b42;">',
+            '<p style="margin: 0 0 17px; color: #e0894f; font-family: Georgia, \'Times New Roman\', serif; '
             f'font-size: 12px; line-height: 1.2; font-weight: 700; letter-spacing: 0.16em;">{html.escape(kicker)}</p>',
             '<p style="margin: 0; color: #ffffff; font-size: 27px; line-height: 1.4; font-weight: 700; '
             f'letter-spacing: 0.01em;">{inline(hero_text, "dark")}</p>',
@@ -440,25 +440,25 @@ def render_markdown(
         if strapline:
             hero_parts[-1] = hero_parts[-1].replace('margin: 0;', 'margin: 0 0 17px;', 1)
             hero_parts.append(
-                '<p style="margin: 0; color: #aeb7b1; font-size: 13px; line-height: 1.7; '
+                '<p style="margin: 0; color: #a8b3c0; font-size: 13px; line-height: 1.7; '
                 f'letter-spacing: 0.05em;">{inline(strapline, "dark")}</p>'
             )
         hero_parts.append("</section>")
         hero_html = "".join(hero_parts)
     elif hero_style == "compact":
         compact_parts = [
-            '<section style="margin: 0 0 29px; padding: 13px 0 12px; border-top: 3px solid #12a868; border-bottom: 1px solid #d8ddd9;">',
-            '<p style="margin: 0; color: #0f8e59; font-family: Georgia, \'Times New Roman\', serif; '
+            '<section style="margin: 0 0 29px; padding: 13px 0 12px; border-top: 3px solid #9b4f2c; border-bottom: 1px solid #e4ded3;">',
+            '<p style="margin: 0; color: #8a4426; font-family: Georgia, \'Times New Roman\', serif; '
             f'font-size: 11px; line-height: 1.4; font-weight: 700; letter-spacing: 0.17em;">{html.escape(kicker)}</p>',
         ]
         if hero:
             compact_parts.append(
-                '<p style="margin: 10px 0 0; color: #121815; font-size: 18px; line-height: 1.65; font-weight: 700; '
+                '<p style="margin: 10px 0 0; color: #182b42; font-size: 18px; line-height: 1.65; font-weight: 700; '
                 f'letter-spacing: 0.01em;">{inline(hero)}</p>'
             )
         if strapline:
             compact_parts.append(
-                '<p style="margin: 8px 0 0; color: #69716d; font-size: 13px; line-height: 1.7; '
+                '<p style="margin: 8px 0 0; color: #536176; font-size: 13px; line-height: 1.7; '
                 f'letter-spacing: 0.03em;">{inline(strapline)}</p>'
             )
         compact_parts.append("</section>")
@@ -468,7 +468,7 @@ def render_markdown(
     else:
         raise ValueError(f"unsupported hero_style: {hero_style}")
     output = (
-        '<section style="margin: 0; padding: 0 14px 42px; background-color: #ffffff; color: #2d332f; '
+        '<section style="margin: 0; padding: 0 14px 42px; background-color: #ffffff; color: #2b3644; '
         'font-family: PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif; word-break: break-word; box-sizing: border-box;">\n'
         '  <section style="max-width: 677px; margin: 0 auto; padding: 0; box-sizing: border-box;">\n'
         f"{hero_html}\n" + "\n".join(blocks) + "\n  </section>\n</section>\n"

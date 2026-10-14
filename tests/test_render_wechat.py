@@ -33,11 +33,11 @@ class RenderWechatTest(unittest.TestCase):
         self.assertNotIn("测试标题", rendered)
         self.assertIn("font-size: 19px", rendered)
         self.assertIn("font-size: 17px", rendered)
-        self.assertIn('color: #121815; font-weight: 700;">关键概念', rendered)
-        self.assertIn("border-bottom: 2px dashed #86caaa", rendered)
+        self.assertIn('color: #182b42; font-weight: 700;">关键概念', rendered)
+        self.assertIn("border-bottom: 2px dashed #d9a07a", rendered)
         self.assertIn("font-size: 20px", rendered)
-        self.assertIn("background-color: #f1f7f3", rendered)
-        self.assertIn("background-color: #121815", rendered)
+        self.assertIn("background-color: #f6f2ea", rendered)
+        self.assertIn("background-color: #182b42", rendered)
         self.assertEqual(metadata["hero_style"], "compact")
         self.assertEqual(metadata["emphasis"]["modules"], 3)
         self.assertEqual(metadata["emphasis"]["inline_highlights"], 1)
@@ -45,12 +45,12 @@ class RenderWechatTest(unittest.TestCase):
     def test_compact_header_does_not_repeat_native_title(self) -> None:
         rendered, _ = render_markdown("# 原生标题\n\n正文。", "MOONLIT", None, None, "compact")
         self.assertNotIn("原生标题", rendered)
-        self.assertIn("border-top: 3px solid #12a868", rendered)
+        self.assertIn("border-top: 3px solid #9b4f2c", rendered)
 
     def test_dark_header_remains_opt_in(self) -> None:
         rendered, _ = render_markdown("# 原生标题\n\n正文。", "MOONLIT", None, None, "dark")
         self.assertIn("原生标题", rendered)
-        self.assertIn("border-top: 7px solid #b7ef3f", rendered)
+        self.assertIn("border-top: 7px solid #e0894f", rendered)
 
     def test_rejects_more_than_three_modules(self) -> None:
         markdown = """# 标题
