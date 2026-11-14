@@ -199,11 +199,21 @@ def build_parser() -> argparse.ArgumentParser:
         help="Brand-image manifest; defaults to <article-dir>/assets/visual-manifest.json for Markdown",
     )
     parser.add_argument("--min-brand-images", type=int, default=2)
+    parser.add_argument(
+        "--approval",
+        help="B 段必填：月明看过本篇最终预览后的批准记录（须包含本篇标题，只对这一篇有效）",
+    )
     return parser
 
 
 def main() -> int:
     args = build_parser().parse_args()
+    if getattr(args, "publish", False):
+        approval = (args.approval or "").strip()
+        if not approval or args.title not in approval:
+            print("上传到公众号后台（B 段）需要月明对这一篇的明确批准：--approval 里写批准记录，且必须包含本篇标题。"
+                  "以前的批准、其他文章的批准不能复用。先用 --dry-run 出预览给月明看。", file=sys.stderr)
+            return 3
     try:
         source_path = (args.markdown or args.html).resolve()
         cover = args.cover.resolve()
@@ -292,7 +302,7 @@ def main() -> int:
             kind, local_path = resolve_image(html_module.unescape(match[1]), asset_base)
             if kind == "local" and local_path:
                 review_files.add(local_path)
-        command = [sys.executable, str(args.guoshen_gate), "--guoshen-dir", str(args.guoshen_dir),
+        command = [sys.executable, str(args.guoshen_gate), "--require-chain-version", "2", "--guoshen-dir", str(args.guoshen_dir),
                    "--receipt", str(args.guoshen_receipt), "--platform", "wechat_article", "--stage", "content"]
         for file in sorted(review_files):
             command.extend(["--file", str(file)])

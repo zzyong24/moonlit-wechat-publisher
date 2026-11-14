@@ -11,7 +11,15 @@ fi
 echo "[1/7] 检查 md2wechat CLI"
 if ! command -v md2wechat >/dev/null 2>&1; then
   echo "将安装 md2wechat ${md2wechat_version}（第三方 GitHub Release）"
-  curl -fsSL "https://github.com/geekjourneyx/md2wechat-skill/releases/download/${md2wechat_version}/install.sh" | bash
+  tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/md2wechat-install.XXXXXX")"
+  trap 'rm -r -- "$tmp_dir"' EXIT   # 只清理本次创建的临时目录
+  curl -fsSL -o "$tmp_dir/install.sh" "https://github.com/geekjourneyx/md2wechat-skill/releases/download/${md2wechat_version}/install.sh"
+  echo "安装脚本 SHA-256：$(shasum -a 256 "$tmp_dir/install.sh" 2>/dev/null || sha256sum "$tmp_dir/install.sh")"
+  if [[ "$non_interactive" -eq 0 ]]; then
+    read -r -p "已核对安装脚本（可先查看 $tmp_dir/install.sh），输入 yes 继续：" ok
+    [[ "$ok" == "yes" ]] || { echo "已取消安装"; exit 1; }
+  fi
+  bash "$tmp_dir/install.sh"
 fi
 export PATH="${HOME}/.local/bin:${PATH}"
 md2wechat version --json
